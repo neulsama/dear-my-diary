@@ -1,0 +1,33 @@
+{
+  "name": "dear-my-diary",
+  "version": "1.0.0",
+  "description": "Monthly, weekly, diary and brainstorm planner with calendar sync",
+  "author": "DEAR MY DIARY",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "dev:background": "node scripts/start-dev-background.mjs",
+    "dev:network": "vite --host 0.0.0.0",
+    "preview": "vite preview --host 127.0.0.1",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.53.0",
+    "date-fns": "^4.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zustand": "^5.0.7"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.0.6",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1,0 +1,8 @@
+사용 방법
+
+1. 이 ZIP의 내용물을 개발할 저장소 최상위 폴더에 넣습니다.
+2. Codex 입력창에는 아래 한 줄만 입력합니다.
+
+Read CODEX_PROMPT.md and implement every requirement. Use both images in the references folder as visual references. Do not stop at planning; modify the repository, run tests, fix errors, and finish the implementation.
+
+긴 프롬프트를 Codex 입력창에 직접 붙여넣을 필요가 없습니다.
