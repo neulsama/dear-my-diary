@@ -14,6 +14,11 @@ alter table public.study_goals
   add column if not exists daily_start_time text,
   add column if not exists daily_end_time text;
 
+-- Optional fixed start time for a single study task (set by dragging it on the
+-- weekly timeline, or in the task editor); blank means auto-placed.
+alter table public.study_tasks
+  add column if not exists start_time text;
+
 create table if not exists public.checklist_items (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
