@@ -1,0 +1,17 @@
+{
+  "name": "DEAR MY DIARY",
+  "short_name": "MY DIARY",
+  "description": "월간·주간 플래너, 사진 다이어리, 자유 브레인스토밍",
+  "lang": "ko",
+  "start_url": "/monthly",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbfaf6",
+  "theme_color": "#fbfaf6",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

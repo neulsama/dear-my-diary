@@ -17,6 +17,15 @@ A warm, private web planner that connects monthly and weekly plans to photo diar
 - Demo Mode browser repository, sample data only when explicitly loaded, JSON export/import, reduced motion, and mobile layouts
 - Supabase PostgreSQL schema, RLS policies, private Storage bucket policy, and external-event deduplication
 
+## Recently added
+
+- **텍스트로 일정 추가** — Monthly/Weekly 상단의 "✎ 텍스트로 일정 추가"에 자유롭게 적으면(예: "내일 오후 2시부터 4시까지 팀 회의, 8월 20일 치과 예약, 매주 월요일 아침 7시 운동") 월간·주간에 자동 정리됩니다. **시작·종료 시간 범위**(2시부터 4시까지, 3-5pm)도 인식하며, 시작 시간만 있으면 종료를 +1시간으로 채워 편집할 수 있게 합니다. 기본은 LLM(Anthropic/OpenAI/DeepSeek) 파싱이며, 키가 없으면 내장 오프라인 파서가 한국어/영어 날짜·시간 표현을 처리합니다. 설정: `.env.example`의 `VITE_LLM_*` 참고.
+- **주간 즉석 체크리스트** — Weekly의 각 날짜에서 공부 분량 입력 없이 바로 할 일을 추가/체크할 수 있습니다(학습 계획과 별도).
+- **브레인스토밍 문서 모드** — Brainstorm의 "문서" 탭에서 노트 카드 대신 제목/부제목/소제목/글머리/본문 블록으로 글씨 크기를 달리해 자유롭게 작성할 수 있습니다.
+- **날짜별 브레인스토밍 (Monthly + Alt+7)** — Monthly에서 날짜(날짜 숫자 클릭)를 선택한 뒤 `Alt + 7`을 누르면 그 날짜 전용 브레인스토밍 패널이 열립니다(위 문서 모드와 동일한 서식 블록). 내용이 있는 날짜에는 ✦ 표시가 뜹니다. (Weekly의 `Alt + 7`은 기존대로 선택 일정의 Diary를 엽니다.)
+- **구글·애플 캘린더 실시간 연동** — 설정 방법은 [CALENDAR_SETUP.md](CALENDAR_SETUP.md) 참고(본인 Supabase·Google 계정 필요). 지금 바로는 캘린더 연동 → ICS 다운로드로 내보낼 수 있습니다.
+- **아이폰 앱으로 설치 (PWA)** — 홈 화면에 추가하면 아이콘·전체화면·오프라인으로 앱처럼 실행됩니다. 매니페스트·아이콘·서비스워커 포함. 설치·배포 방법은 [INSTALL_IPHONE.md](INSTALL_IPHONE.md) 참고.
+
 ## Local development
 
 ```bash

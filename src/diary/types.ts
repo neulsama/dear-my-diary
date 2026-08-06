@@ -14,7 +14,10 @@ export interface DiaryEntry { id: string; eventId: string; title: string; body: 
 export interface DiaryComment { id: string; entryId: string; body: string; createdAt: string; updatedAt: string }
 export interface BrainstormNode { id: string; boardId: string; title: string; body: string; color: string; x: number; y: number; width: number; height: number; createdAt: string; updatedAt: string }
 export interface BrainstormEdge { id: string; boardId: string; sourceId: string; targetId: string; createdAt: string }
-export interface BrainstormBoard { id: string; name: string; nodes: BrainstormNode[]; edges: BrainstormEdge[]; createdAt: string; updatedAt: string }
+export type DocBlockType = 'title' | 'subtitle' | 'heading' | 'bullet' | 'body'
+export interface DocBlock { id: string; type: DocBlockType; text: string }
+export interface BrainstormBoard { id: string; name: string; nodes: BrainstormNode[]; edges: BrainstormEdge[]; blocks: DocBlock[]; createdAt: string; updatedAt: string }
+export interface ChecklistItem { id: string; date: string; text: string; done: boolean; sortOrder: number; color?: string; createdAt: string; updatedAt: string; deletedAt?: string }
 export interface DiaryProfile { displayName: string; handle: string; avatar: string; timezone: string; defaultEventDuration: number; defaultReminder: number }
 export type PlannerDensity = 'relaxed' | 'default' | 'compact' | 'custom'
 export type RolloverPolicy = 'none' | 'next-day' | 'reschedule' | 'ask'
@@ -55,7 +58,7 @@ export interface CalendarPreferences {
   googleStudyTimeMode: 'all-day' | 'timed'; subjectCalendars: Record<string, string>; appleIncludeEvents: boolean
   appleIncludeStudy: boolean; appleIncludeCompleted: boolean; appleIncludeNotes: boolean; appleIncludeEstimatedTime: boolean
 }
-export interface DiaryData { events: PlannerEvent[]; entries: DiaryEntry[]; comments: DiaryComment[]; boards: BrainstormBoard[]; profile: DiaryProfile; calendar: CalendarPreferences; preferences: UserPreferences; studyGoals: StudyGoal[]; studyTasks: StudyTask[]; dailyMemos:Record<string,string> }
+export interface DiaryData { events: PlannerEvent[]; entries: DiaryEntry[]; comments: DiaryComment[]; boards: BrainstormBoard[]; checklists: ChecklistItem[]; profile: DiaryProfile; calendar: CalendarPreferences; preferences: UserPreferences; studyGoals: StudyGoal[]; studyTasks: StudyTask[]; dailyMemos:Record<string,string>; dateBrainstorms:Record<string,DocBlock[]> }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   fontScale:100,plannerDensity:'default',monthlyVisibleEventCount:4,monthlyVisibleTaskCount:3,weeklyVisibleTaskCount:8,
@@ -66,8 +69,8 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
 }
 
 export const DEFAULT_DIARY_DATA: DiaryData = {
-  events: [], entries: [], comments: [], boards: [{ id: 'default-board', name: 'My first board', nodes: [], edges: [], createdAt: new Date(0).toISOString(), updatedAt: new Date(0).toISOString() }],
+  events: [], entries: [], comments: [], checklists: [], boards: [{ id: 'default-board', name: 'My first board', nodes: [], edges: [], blocks: [], createdAt: new Date(0).toISOString(), updatedAt: new Date(0).toISOString() }],
   profile: { displayName: 'Diary Keeper', handle: '@myday', avatar: '', timezone: 'Asia/Seoul', defaultEventDuration: 60, defaultReminder: 10 },
   calendar: { googleConnected: false, googleEmail: '', googleCalendarId: 'primary', autoSync: false, appleToken: '',googleContent:'both',googleIncludeCompleted:false,googleCompletedPrefix:true,googleStudyTimeMode:'all-day',subjectCalendars:{},appleIncludeEvents:true,appleIncludeStudy:true,appleIncludeCompleted:false,appleIncludeNotes:true,appleIncludeEstimatedTime:true },
-  preferences: structuredClone(DEFAULT_PREFERENCES), studyGoals: [], studyTasks: [], dailyMemos:{}
+  preferences: structuredClone(DEFAULT_PREFERENCES), studyGoals: [], studyTasks: [], dailyMemos:{}, dateBrainstorms:{}
 }

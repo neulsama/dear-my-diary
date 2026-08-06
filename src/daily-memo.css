@@ -1,1 +1,11 @@
 .daily-memo{width:100%;margin-top:8px;min-height:32px;font-size:.7rem;resize:none}
+.weekly-checklist{margin-top:8px;display:grid;gap:3px}
+.weekly-checklist .checklist-label{font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.checklist-row{display:grid;grid-template-columns:auto 1fr auto;gap:5px;align-items:center}
+.checklist-row .checklist-text{border:0;background:transparent;font-size:.72rem;padding:2px 3px;width:100%;color:var(--text)}
+.checklist-row .checklist-text:focus{background:var(--paper);outline:1px solid var(--line)}
+.checklist-row.done .checklist-text{text-decoration:line-through;color:var(--muted)}
+.checklist-row .checklist-remove{border:0;background:transparent;color:var(--muted);cursor:pointer;padding:0 3px;opacity:0}
+.checklist-row:hover .checklist-remove{opacity:1}
+.checklist-add{border:1px dashed var(--line);background:transparent;font-size:.7rem;padding:4px 5px;width:100%;color:var(--muted)}
+.checklist-add:focus{color:var(--text);border-style:solid;outline:none}
