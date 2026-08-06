@@ -40,6 +40,7 @@ export interface StudyGoal {
   totalAmount: number; completedAmount: number; startDate: string; deadline: string; priority: number; difficulty: number
   minDailyAmount?: number; maxDailyAmount?: number; chunkSize: number; availableWeekdays: number[]; excludedDates: string[]
   restDates: string[]; dailyCapacity: Record<string, number>; estimatedMinutesPerUnit?: number; bufferDays: number
+  dailyStartTime?: string; dailyEndTime?: string
   textColor: string; backgroundColor: string; borderColor: string; notes: string; autoScheduleEnabled: boolean
   googleSyncEnabled: boolean; appleFeedEnabled: boolean; status: StudyGoalStatus; createdAt: string; updatedAt: string; deletedAt?: string
 }

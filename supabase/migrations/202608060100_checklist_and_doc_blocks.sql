@@ -9,6 +9,11 @@ alter table public.brainstorm_boards
 alter table public.user_preferences
   add column if not exists date_brainstorms jsonb not null default '{}'::jsonb;
 
+-- Per-subject daily study time window (placed on the weekly timeline).
+alter table public.study_goals
+  add column if not exists daily_start_time text,
+  add column if not exists daily_end_time text;
+
 create table if not exists public.checklist_items (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,

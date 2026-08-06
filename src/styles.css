@@ -60,3 +60,21 @@
 .doc-editor.compact .doc-body{padding:14px 4px;max-width:none}
 .date-brainstorm{padding:8px 20px 4px}
 .date-brainstorm-hint{font-size:.75rem;color:var(--muted);margin:0 0 4px}
+
+/* Weekly redesign: memo-only per-day row + timeline checkboxes + study lane */
+.weekly-memo-board{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));min-width:1120px;border:1px solid var(--line);margin-bottom:16px}
+.weekly-memo-day{border-right:1px solid var(--line);padding:8px}
+.weekly-memo-day:last-child{border-right:0}
+.weekly-memo-day header{font-size:.72rem;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:6px}
+.weekly-memo-day .daily-memo{min-height:56px}
+.event-check{position:absolute;top:3px;left:3px;margin:0;width:13px;height:13px;cursor:pointer;z-index:2}
+.timeline-event{padding-left:20px}
+.timeline-event.done b{text-decoration:line-through;opacity:.6}
+.timeline-study{position:absolute;padding:2px 4px 2px 20px;border:1px dashed var(--task-border,var(--purple));background:var(--task-bg,var(--purple-pale));color:var(--task-text,var(--text));font-size:.62rem;overflow:hidden;text-align:left;display:flex;flex-direction:column;gap:1px;cursor:pointer;border-radius:2px;z-index:1}
+.timeline-study b{font-size:.66rem;line-height:1.1}
+.timeline-study.auto{opacity:.9}
+.timeline-study.done b,.timeline-study.done span{text-decoration:line-through;opacity:.55}
+.allday-event{display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0}
+.allday-event .event-check{position:static}
+.allday-event button{border:1px solid;background:inherit;font:inherit;color:inherit;padding:2px 6px;cursor:pointer}
+.allday-event.done button{text-decoration:line-through;opacity:.6}
