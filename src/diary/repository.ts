@@ -64,5 +64,9 @@ export function validateDiaryData(value: unknown): DiaryData {
   const legacy=(value as {dateBrainstorms?:Record<string,Array<{text?:string}>>}).dateBrainstorms
   const dateDiaries:Record<string,string>=data.dateDiaries&&typeof data.dateDiaries==='object'?{...data.dateDiaries}:{}
   if(legacy&&typeof legacy==='object')for(const [key,blocks] of Object.entries(legacy)){if(!dateDiaries[key]&&Array.isArray(blocks)){const text=blocks.map(block=>block?.text??'').filter(Boolean).join('\n');if(text)dateDiaries[key]=text}}
-  return { events:data.events,entries:data.entries,comments:data.comments,boards,checklists:Array.isArray(data.checklists)?data.checklists:[],profile:{...DEFAULT_DIARY_DATA.profile,...data.profile},calendar:{...DEFAULT_DIARY_DATA.calendar,...data.calendar},preferences:{...DEFAULT_DIARY_DATA.preferences,...data.preferences},studyGoals:Array.isArray(data.studyGoals)?data.studyGoals:[],studyTasks:Array.isArray(data.studyTasks)?data.studyTasks:[],dailyMemos:data.dailyMemos&&typeof data.dailyMemos==='object'?data.dailyMemos:{},dateDiaries }
+  const preferences={...DEFAULT_DIARY_DATA.preferences,...data.preferences}
+  // 예전 기본값(100%)으로 저장된 기기는 새 기본(140%)으로 올린다. 직접 다른 값을
+  // 고른 사용자는 그대로 유지되고, 설정에서 언제든 다시 조절할 수 있다.
+  if(preferences.fontScale===100)preferences.fontScale=140
+  return { events:data.events,entries:data.entries,comments:data.comments,boards,checklists:Array.isArray(data.checklists)?data.checklists:[],profile:{...DEFAULT_DIARY_DATA.profile,...data.profile},calendar:{...DEFAULT_DIARY_DATA.calendar,...data.calendar},preferences,studyGoals:Array.isArray(data.studyGoals)?data.studyGoals:[],studyTasks:Array.isArray(data.studyTasks)?data.studyTasks:[],dailyMemos:data.dailyMemos&&typeof data.dailyMemos==='object'?data.dailyMemos:{},dateDiaries }
 }

@@ -25,6 +25,7 @@ A warm, private web planner that connects monthly and weekly plans to photo diar
 - **날짜별 브레인스토밍 (Monthly + Alt+7)** — Monthly에서 날짜(날짜 숫자 클릭)를 선택한 뒤 `Alt + 7`을 누르면 그 날짜 전용 브레인스토밍 패널이 열립니다(위 문서 모드와 동일한 서식 블록). 내용이 있는 날짜에는 ✦ 표시가 뜹니다. (Weekly의 `Alt + 7`은 기존대로 선택 일정의 Diary를 엽니다.)
 - **구글·애플 캘린더 실시간 연동** — 설정 방법은 [CALENDAR_SETUP.md](CALENDAR_SETUP.md) 참고(본인 Supabase·Google 계정 필요). 지금 바로는 캘린더 연동 → ICS 다운로드로 내보낼 수 있습니다.
 - **아이폰 앱으로 설치 (PWA)** — 홈 화면에 추가하면 아이콘·전체화면·오프라인으로 앱처럼 실행됩니다. 매니페스트·아이콘·서비스워커 포함. 설치·배포 방법은 [INSTALL_IPHONE.md](INSTALL_IPHONE.md) 참고.
+- **기기 간 동기화 (Supabase)** — 이메일 로그인으로 아이폰·PC가 같은 데이터를 공유. 10분 설정 가이드: [SUPABASE_SETUP.md](SUPABASE_SETUP.md) (통합 SQL: `supabase/setup.sql` 한 번 붙여넣기).
 
 ## Local development
 

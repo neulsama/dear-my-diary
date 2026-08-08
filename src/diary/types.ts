@@ -62,7 +62,7 @@ export interface CalendarPreferences {
 export interface DiaryData { events: PlannerEvent[]; entries: DiaryEntry[]; comments: DiaryComment[]; boards: BrainstormBoard[]; checklists: ChecklistItem[]; profile: DiaryProfile; calendar: CalendarPreferences; preferences: UserPreferences; studyGoals: StudyGoal[]; studyTasks: StudyTask[]; dailyMemos:Record<string,string>; dateDiaries:Record<string,string> }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
-  fontScale:100,plannerDensity:'default',monthlyVisibleEventCount:4,monthlyVisibleTaskCount:3,weeklyVisibleTaskCount:8,
+  fontScale:140,plannerDensity:'default',monthlyVisibleEventCount:4,monthlyVisibleTaskCount:3,weeklyVisibleTaskCount:8,
   calendarCellHeight:138,eventCardGap:3,checklistRowHeight:36,eventTitleMaxLines:1,memoSectionEnabled:true,memoSectionHeight:58,
   collapseCompletedTasks:false,completedTaskLimit:5,defaultTextColor:'#252328',defaultBackgroundColor:'#fbfaf6',secondaryBackgroundColor:'#fffefa',
   accentColor:'#74539b',calendarLineColor:'#6f6b6f',completedItemColor:'#a54646',selectedItemColor:'#74539b',autoContrastEnabled:true,
