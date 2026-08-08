@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import { PlannerHeader } from './diary/components/PlannerHeader'
+import { InstallPrompt } from './diary/components/InstallPrompt'
 import { MonthlyPage } from './diary/pages/MonthlyPage'
 import { WeeklyPage } from './diary/pages/WeeklyPage'
 import { DiaryEntryPage } from './diary/pages/DiaryEntryPage'
@@ -138,6 +139,7 @@ export default function App() {
   return <div className="diary-app">
     <PlannerHeader sync={syncLabel} profile={store.profile.displayName || userEmail || 'Diary'} onToday={() => { setAnchor(new Date()); if (!['monthly', 'weekly'].includes(current.route)) navigate('/monthly') }} onSignOut={!DEMO_MODE ? () => void supabase?.auth.signOut() : undefined} />
     <nav className="main-nav" aria-label="Main navigation">{nav.map(item => <button key={item.id} className={current.route === item.id ? 'active' : ''} onClick={() => navigate(item.path)}>{item.label}</button>)}</nav>
+    <InstallPrompt />
     <main>
       {current.route === 'monthly' && <MonthlyPage anchor={anchor} setAnchor={setAnchor} openDiary={openDiary} />}
       {current.route === 'weekly' && <WeeklyPage anchor={anchor} setAnchor={setAnchor} openDiary={openDiary} />}
