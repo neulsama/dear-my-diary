@@ -78,3 +78,34 @@
 .allday-event .event-check{position:static}
 .allday-event button{border:1px solid;background:inherit;font:inherit;color:inherit;padding:2px 6px;cursor:pointer}
 .allday-event.done button{text-decoration:line-through;opacity:.6}
+
+/* Big per-date diary modal + diary archive + canvas free-text base layer */
+.date-diary{display:flex;flex-direction:column;gap:8px;padding:14px 20px 18px}
+.date-diary-text{width:100%;min-height:62vh;resize:vertical;border:1px solid var(--line);background:var(--paper);padding:16px;font-family:inherit;font-size:calc(.95rem * var(--app-font-scale));line-height:1.7}
+.date-diary-text:focus{outline:2px solid var(--purple);outline-offset:-2px}
+.date-diary-hint{color:var(--muted);font-size:.7rem}
+.diary-archive{display:flex;flex-direction:column;gap:16px;max-width:860px;margin:0 auto;width:100%}
+.diary-archive-hint{font-size:.78rem;color:var(--muted);line-height:1.6;margin:0}
+.diary-archive-entry{border:1px solid var(--line);background:var(--paper)}
+.diary-archive-entry header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.diary-archive-entry header b{font-size:.85rem}
+.diary-archive-entry header .danger-button{font-size:.68rem;padding:4px 8px}
+.diary-archive-entry textarea{width:100%;min-height:180px;border:0;background:transparent;padding:14px;font-family:inherit;font-size:calc(.9rem * var(--app-font-scale));line-height:1.7;resize:vertical}
+.diary-archive-entry textarea:focus{outline:none;background:#fffefa}
+.canvas-freetext{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;resize:none;padding:24px;font-family:inherit;font-size:calc(.92rem * var(--app-font-scale));line-height:1.8;color:var(--text);z-index:0}
+.canvas-freetext:focus{outline:none}
+.brainstorm-canvas svg{pointer-events:none;z-index:1}
+.brainstorm-canvas .idea-card{z-index:2}
+
+/* Study text-capture parsed goal list */
+.study-capture-list{display:grid;gap:10px;max-height:44vh;overflow:auto}
+.study-capture-item{border:1px solid var(--line);background:var(--paper);padding:10px;display:grid;gap:8px}
+.study-capture-item .sc-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.study-capture-item .sc-row>label{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted)}
+.study-capture-item input[type=number]{width:76px}
+.study-capture-item input,.study-capture-item select{font-size:.78rem;padding:5px;border:1px solid var(--line);background:transparent}
+.study-capture-item .qc-title{flex:1;font-weight:600;min-width:0}
+.study-capture-item .sc-days{gap:6px}
+.study-capture-item .sc-days>span{font-size:.7rem;color:var(--muted)}
+.study-capture-item .sc-days label{display:flex;align-items:center;gap:2px;font-size:.72rem;border:1px solid var(--line);padding:2px 6px;cursor:pointer}
+.study-capture-item .sc-days label.off{background:#f6e3e2;border-color:#c98a86}

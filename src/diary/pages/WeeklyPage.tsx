@@ -34,12 +34,16 @@ export function WeeklyPage({anchor,setAnchor,openDiary}:{anchor:Date;setAnchor(d
  const studyBlocks=(key:string)=>{
   const rows=filtered.filter(task=>task.scheduledDate===key).map(task=>({task,goal:goals.find(g=>g.id===task.goalId)}))
   const out:any[]=[]
-  // 시간이 지정된(드래그로 놓거나 직접 입력한) 태스크는 그 시각에 고정
-  for(const {task,goal} of rows){const fixed=toMin(task.startTime);if(fixed==null)continue;const dur=task.estimatedMinutes>0?task.estimatedMinutes:60;out.push({task,goal,start:fixed,end:Math.max(fixed+15,fixed+dur),auto:false})}
-  // 나머지는 목표 시작 시간(미지정 시 오후 6시)부터 순서대로 자동 배치
-  const auto=rows.filter(({task})=>toMin(task.startTime)==null).sort((a,b)=>((toMin(a.goal?.dailyStartTime)??DEFAULT_STUDY_START)-(toMin(b.goal?.dailyStartTime)??DEFAULT_STUDY_START))||(a.goal?.subject??'').localeCompare(b.goal?.subject??''))
-  let cursor:number|null=null
-  for(const {task,goal} of auto){const win=toMin(goal?.dailyStartTime)??DEFAULT_STUDY_START,winEnd=toMin(goal?.dailyEndTime);const start:number=cursor==null?win:Math.max(win,cursor),dur=task.estimatedMinutes>0?task.estimatedMinutes:60;let end:number=start+dur;if(winEnd&&winEnd>start&&end>winEnd)end=winEnd;cursor=end;out.push({task,goal,start,end:Math.max(start+15,end),auto:true})}
+  const clamp=(s:number,e:number)=>({start:s,end:Math.max(s+15,Math.min(e,24*60))})
+  // 1) 태스크에 시각이 지정된 경우(드래그/직접 입력) → 그 시각 고정
+  const rest:typeof rows=[]
+  for(const r of rows){const fixed=toMin(r.task.startTime);if(fixed!=null){const dur=r.task.estimatedMinutes>0?r.task.estimatedMinutes:60;out.push({...r,...clamp(fixed,fixed+dur),auto:false})}else rest.push(r)}
+  // 2) 목표에 공부 시간대가 지정된 태스크 → 그 시간대에 배치(같은 목표끼리는 이어서)
+  const goalCursor:Record<string,number>={}
+  for(const r of rest.filter(r=>toMin(r.goal?.dailyStartTime)!=null)){const win=toMin(r.goal!.dailyStartTime)!,winEnd=toMin(r.goal?.dailyEndTime);const start=Math.max(win,goalCursor[r.goal!.id]??win),dur=r.task.estimatedMinutes>0?r.task.estimatedMinutes:60;let end=start+dur;if(winEnd&&winEnd>start&&end>winEnd)end=winEnd;goalCursor[r.goal!.id]=end;out.push({...r,...clamp(start,end),auto:false})}
+  // 3) 나머지는 오후 6시부터 순서대로 자동 배치(겹치면 나란히 표시)
+  let cursor=DEFAULT_STUDY_START
+  for(const r of rest.filter(r=>toMin(r.goal?.dailyStartTime)==null).sort((a,b)=>(a.goal?.subject??'').localeCompare(b.goal?.subject??''))){const dur=r.task.estimatedMinutes>0?r.task.estimatedMinutes:60;out.push({...r,...clamp(cursor,cursor+dur),auto:true});cursor=Math.min(cursor+dur,23*60)}
   return out
  }
  return <section className="planner-page weekly-page-new"><div className="planner-heading"><div><span className="week-label">WEEK OF</span><strong>{format(startMonday(anchor),'MMM d')} — {format(addDays(startMonday(anchor),6),'MMM d, yyyy')}</strong></div><div><QuickCapture/><button onClick={()=>setAnchor(addDays(anchor,-7))}>‹ Previous</button><button onClick={()=>setAnchor(new Date())}>This Week</button><button onClick={()=>setAnchor(addDays(anchor,7))}>Next ›</button></div></div>

@@ -19,6 +19,13 @@ alter table public.study_goals
 alter table public.study_tasks
   add column if not exists start_time text;
 
+-- Per-date diary text (opened from Monthly via Alt+7, archived in Brainstorm's
+-- Diary tab) and the brainstorm canvas free-text base layer.
+alter table public.user_preferences
+  add column if not exists date_diaries jsonb not null default '{}'::jsonb;
+alter table public.brainstorm_boards
+  add column if not exists free_text text not null default '';
+
 create table if not exists public.checklist_items (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,

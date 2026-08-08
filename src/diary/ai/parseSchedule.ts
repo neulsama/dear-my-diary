@@ -173,3 +173,98 @@ function extractTimes(str: string): string[] {
 export function localParse(text: string, ref: Date): ParsedEvent[] {
   return text.split(/[\n,;、]+/).map(line => localParseLine(line, ref)).filter((e): e is ParsedEvent => Boolean(e))
 }
+
+// ---- 자연어 -> 공부 목표 (전체 공부 분량) ----
+export interface ParsedStudyGoal {
+  subject: string
+  title?: string
+  unitType?: 'page' | 'problem' | 'lecture' | 'chapter' | 'word' | 'minute' | 'hour'
+  totalAmount?: number
+  startDate?: string       // YYYY-MM-DD
+  deadline?: string        // YYYY-MM-DD
+  dailyStartTime?: string  // HH:mm
+  dailyEndTime?: string    // HH:mm
+  dailyMinutes?: number    // 하루 공부 가능 시간(분)
+  excludedWeekdays?: number[] // 0=일 … 6=토
+}
+export interface StudyParseResult { goals: ParsedStudyGoal[]; source: 'ai' | 'local'; note?: string }
+
+function studySystemPrompt(ref: Date): string {
+  const weekday = ref.toLocaleDateString('en-US', { weekday: 'long' })
+  return `You turn a user's natural-language study plan (Korean or English) into structured study goals.
+Today is ${toISODate(ref)} (${weekday}). Timezone Asia/Seoul. Resolve relative dates (내일, 다음주, 일주일 안에 = today + 7 days, 8월 11일까지) against today.
+Return ONLY minified JSON, no prose, no code fences, shaped exactly:
+{"goals":[{"subject":str,"title":str|null,"unitType":"page"|"problem"|"lecture"|"chapter"|"word"|"minute"|"hour"|null,"totalAmount":num|null,"startDate":"YYYY-MM-DD"|null,"deadline":"YYYY-MM-DD"|null,"dailyStartTime":"HH:mm"|null,"dailyEndTime":"HH:mm"|null,"dailyMinutes":num|null,"excludedWeekdays":[int]|null}]}
+Rules:
+- subject: the material's name (책/과목/잡지 이름). Keep it short.
+- totalAmount+unitType: 308페이지 -> 308+"page"; 60문제 -> 60+"problem". If no amount is stated (e.g. "매일 1시간씩 잡지 읽기"), leave both null.
+- deadline: "8월 11일까지"->that date. "일주일 안에"->today+7. If none, null.
+- dailyStartTime/dailyEndTime: a preferred daily study time window like "오후 6시부터 7시까지" -> 18:00/19:00.
+- dailyMinutes: available minutes per day ("하루 5시간"->300, "매일 한시간씩"->60).
+- excludedWeekdays: days the user CANNOT study, 0=일요일,1=월,2=화,3=수,4=목,5=금,6=토. "화요일 수요일은 공부 못해"->[2,3].
+- Split independent materials into separate goals. Do not invent numbers the user didn't say.`
+}
+
+function normalizeStudy(raw: any): ParsedStudyGoal[] {
+  const list = Array.isArray(raw?.goals) ? raw.goals : []
+  const units = ['page', 'problem', 'lecture', 'chapter', 'word', 'minute', 'hour']
+  return list.filter((g: any) => g && g.subject).map((g: any) => ({
+    subject: String(g.subject).slice(0, 60),
+    title: g.title ? String(g.title).slice(0, 100) : undefined,
+    unitType: units.includes(g.unitType) ? g.unitType : undefined,
+    totalAmount: Number.isFinite(+g.totalAmount) && +g.totalAmount > 0 ? Math.round(+g.totalAmount) : undefined,
+    startDate: /^\d{4}-\d{2}-\d{2}$/.test(g.startDate || '') ? g.startDate : undefined,
+    deadline: /^\d{4}-\d{2}-\d{2}$/.test(g.deadline || '') ? g.deadline : undefined,
+    dailyStartTime: /^\d{1,2}:\d{2}$/.test(g.dailyStartTime || '') ? g.dailyStartTime : undefined,
+    dailyEndTime: /^\d{1,2}:\d{2}$/.test(g.dailyEndTime || '') ? g.dailyEndTime : undefined,
+    dailyMinutes: Number.isFinite(+g.dailyMinutes) && +g.dailyMinutes > 0 ? Math.round(+g.dailyMinutes) : undefined,
+    excludedWeekdays: Array.isArray(g.excludedWeekdays) ? g.excludedWeekdays.map((n: any) => +n).filter((n: number) => n >= 0 && n <= 6) : undefined
+  }))
+}
+
+async function callAnthropicRaw(system: string, text: string): Promise<any> {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-api-key': apiKey!, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model, max_tokens: 1024, system, messages: [{ role: 'user', content: text }] })
+  })
+  if (!res.ok) throw new Error(`Anthropic ${res.status}`)
+  const data = await res.json()
+  return stripJson((data.content || []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join(''))
+}
+async function callOpenAICompatibleRaw(system: string, text: string): Promise<any> {
+  const res = await fetch(`${openaiBase}/chat/completions`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ model, temperature: 0, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: text }] })
+  })
+  if (!res.ok) throw new Error(`${provider} ${res.status}`)
+  const data = await res.json()
+  return stripJson(data.choices?.[0]?.message?.content || '{}')
+}
+
+export async function parseStudyGoals(text: string, ref: Date = new Date()): Promise<StudyParseResult> {
+  const trimmed = text.trim()
+  if (!trimmed) return { goals: [], source: 'local' }
+  if (import.meta.env.PROD) {
+    try {
+      const res = await fetch('/api/parse-schedule', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: 'study', text: trimmed, referenceDate: ref.toISOString() }) })
+      if (res.ok) {
+        const data = await res.json()
+        const goals = normalizeStudy(data)
+        if (goals.length) return { goals, source: 'ai' }
+        return { goals: [], source: 'local', note: data.note || '목표를 찾지 못했습니다. 과목명과 기간을 함께 적어 보세요.' }
+      }
+    } catch { /* fall through */ }
+    return { goals: [], source: 'local', note: 'AI 서버 호출에 실패했습니다. 잠시 후 다시 시도해 주세요.' }
+  }
+  if (!apiKey) return { goals: [], source: 'local', note: 'AI 키가 없어 공부 목표 파싱을 사용할 수 없습니다. .env.local을 확인해 주세요.' }
+  try {
+    const raw = provider === 'anthropic' ? await callAnthropicRaw(studySystemPrompt(ref), trimmed) : await callOpenAICompatibleRaw(studySystemPrompt(ref), trimmed)
+    const goals = normalizeStudy(raw)
+    if (goals.length) return { goals, source: 'ai' }
+    return { goals: [], source: 'local', note: '목표를 찾지 못했습니다. 과목명과 기간을 함께 적어 보세요.' }
+  } catch (error) {
+    return { goals: [], source: 'local', note: `AI 호출 실패 (${error instanceof Error ? error.message.slice(0, 80) : 'error'})` }
+  }
+}

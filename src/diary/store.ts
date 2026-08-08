@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { BrainstormBoard, BrainstormEdge, BrainstormNode, ChecklistItem, DiaryComment, DiaryData, DiaryEntry, DocBlock, PlannerEvent, StudyGoal, StudyTask, UserPreferences } from './types'
+import type { BrainstormBoard, BrainstormEdge, BrainstormNode, ChecklistItem, DiaryComment, DiaryData, DiaryEntry, PlannerEvent, StudyGoal, StudyTask, UserPreferences } from './types'
 import { DEFAULT_DIARY_DATA } from './types'
 import { diaryRepository, validateDiaryData } from './repository'
 import { distributeStudyGoal } from './study/scheduler'
@@ -14,11 +14,14 @@ interface DiaryState extends DiaryData {
   updateProfile(profile:DiaryData['profile']):Promise<void>; updateCalendar(calendar:DiaryData['calendar']):Promise<void>
   updatePreferences(preferences:UserPreferences):Promise<void>; saveStudyGoal(goal:StudyGoal):Promise<void>; applyStudySchedule(goal:StudyGoal,tasks:StudyTask[]):Promise<void>
   updateStudyTask(task:StudyTask):Promise<void>; deleteStudyGoal(id:string):Promise<void>; rolloverOverdueTasks(today?:string):Promise<void>
-  saveDailyMemo(date:string,content:string):Promise<void>; saveDateBrainstorm(date:string,blocks:DocBlock[]):Promise<void>
+  saveDailyMemo(date:string,content:string):Promise<void>; saveDateDiary(date:string,content:string):Promise<void>
   loadSample():Promise<void>; importData(value:unknown):Promise<void>; reset():Promise<void>
 }
-const snapshot=(state:DiaryState):DiaryData=>({events:state.events,entries:state.entries,comments:state.comments,boards:state.boards,checklists:state.checklists,profile:state.profile,calendar:state.calendar,preferences:state.preferences,studyGoals:state.studyGoals,studyTasks:state.studyTasks,dailyMemos:state.dailyMemos,dateBrainstorms:state.dateBrainstorms})
+const snapshot=(state:DiaryState):DiaryData=>({events:state.events,entries:state.entries,comments:state.comments,boards:state.boards,checklists:state.checklists,profile:state.profile,calendar:state.calendar,preferences:state.preferences,studyGoals:state.studyGoals,studyTasks:state.studyTasks,dailyMemos:state.dailyMemos,dateDiaries:state.dateDiaries})
 const now=()=>new Date().toISOString()
+// 타이핑 중(메모·다이어리)에는 상태만 즉시 바꾸고 저장은 잠깐 미룬다.
+// 키 입력마다 전체 스토어를 직렬화하면 폰에서 렉이 생겨 글자가 씹힐 수 있다.
+let persistTimer:ReturnType<typeof setTimeout>|undefined
 
 export const useDiaryStore=create<DiaryState>((set,get)=>({
   ...structuredClone(DEFAULT_DIARY_DATA),ready:false,saveState:'Saved',
@@ -43,8 +46,8 @@ export const useDiaryStore=create<DiaryState>((set,get)=>({
   async updateStudyTask(task){set(s=>{const before=s.studyTasks.find(v=>v.id===task.id);const delta=task.completedAmount-(before?.completedAmount??0);return{studyTasks:s.studyTasks.some(v=>v.id===task.id)?s.studyTasks.map(v=>v.id===task.id?task:v):[...s.studyTasks,task],studyGoals:s.studyGoals.map(goal=>goal.id===task.goalId?{...goal,completedAmount:Math.min(goal.totalAmount,Math.max(0,goal.completedAmount+delta)),updatedAt:now(),status:goal.completedAmount+delta>=goal.totalAmount?'completed':goal.status==='completed'?'active':goal.status}:goal)}});await get().persist()},
   async deleteStudyGoal(id){set(s=>({studyGoals:s.studyGoals.map(goal=>goal.id===id?{...goal,deletedAt:now(),updatedAt:now()}:goal),studyTasks:s.studyTasks.map(task=>task.goalId===id?{...task,deletedAt:now(),updatedAt:now()}:task)}));await get().persist()},
   async rolloverOverdueTasks(today=new Date().toISOString().slice(0,10)){const state=get(),policy=state.preferences.rolloverPolicy;if(policy==='none'||policy==='ask')return;if(policy==='next-day'){set(s=>({studyTasks:s.studyTasks.map(task=>task.scheduledDate<today&&task.status!=='completed'&&!task.isLocked?{...task,scheduledDate:today,updatedAt:now()}:task)}));await get().persist();return}for(const goal of state.studyGoals.filter(item=>item.status==='active'&&!item.deletedAt)){const overdue=state.studyTasks.some(task=>task.goalId===goal.id&&task.scheduledDate<today&&task.status!=='completed'&&!task.isLocked&&!task.deletedAt);if(!overdue)continue;const result=distributeStudyGoal({...goal,startDate:today},state.studyTasks.filter(task=>task.goalId===goal.id),state.events);if(result.ok)await get().applyStudySchedule(goal,result.tasks)}},
-  async saveDailyMemo(date,content){set(s=>({dailyMemos:{...s.dailyMemos,[date]:content}}));await get().persist()},
-  async saveDateBrainstorm(date,blocks){set(s=>({dateBrainstorms:{...s.dateBrainstorms,[date]:blocks}}));await get().persist()},
+  async saveDailyMemo(date,content){set(s=>({dailyMemos:{...s.dailyMemos,[date]:content}}));clearTimeout(persistTimer);persistTimer=setTimeout(()=>void get().persist(),400)},
+  async saveDateDiary(date,content){set(s=>({dateDiaries:{...s.dateDiaries,[date]:content}}));clearTimeout(persistTimer);persistTimer=setTimeout(()=>void get().persist(),400)},
   async loadSample(){const n=now();const start=new Date();start.setHours(10,0,0,0);const events:PlannerEvent[]=[{id:crypto.randomUUID(),title:'Morning pages',description:'Write three pages and plan the day.',startAt:start.toISOString(),endAt:new Date(start.getTime()+3600000).toISOString(),allDay:false,color:'#8f78b8',location:'Home',status:'planned',recurrenceRule:'',reminderMinutes:10,source:'local',googleSync:false,syncStatus:'local',createdAt:n,updatedAt:n},{id:crypto.randomUUID(),title:'Coffee with Mina',description:'Catch up and take a photo.',startAt:new Date(start.getTime()+86400000*2+14400000).toISOString(),endAt:new Date(start.getTime()+86400000*2+18000000).toISOString(),allDay:false,color:'#d8898f',location:'Yeonnam',status:'planned',recurrenceRule:'',reminderMinutes:30,source:'local',googleSync:false,syncStatus:'local',createdAt:n,updatedAt:n}];set({events});await get().persist()},
   async importData(value){const data=validateDiaryData(value);set(data);await get().persist()},async reset(){await diaryRepository.clear();set(structuredClone(DEFAULT_DIARY_DATA));await get().persist()}
 }))
@@ -52,6 +55,6 @@ export const useDiaryStore=create<DiaryState>((set,get)=>({
 export const newEvent=(date=new Date()):PlannerEvent=>{const start=new Date(date);start.setHours(start.getHours()+1,0,0,0);const n=now();return{id:crypto.randomUUID(),title:'',description:'',startAt:start.toISOString(),endAt:new Date(start.getTime()+3600000).toISOString(),allDay:false,color:'#8f78b8',location:'',status:'planned',recurrenceRule:'',reminderMinutes:10,source:'local',googleSync:false,syncStatus:'local',createdAt:n,updatedAt:n}}
 export const newEntry=(eventId:string):DiaryEntry=>{const n=now();return{id:crypto.randomUUID(),eventId,title:'',body:'',mood:'calm',tags:[],images:[],createdAt:n,updatedAt:n}}
 export const newComment=(entryId:string,body:string):DiaryComment=>{const n=now();return{id:crypto.randomUUID(),entryId,body,createdAt:n,updatedAt:n}}
-export const newBoard=(name='Untitled board'):BrainstormBoard=>{const n=now();return{id:crypto.randomUUID(),name,nodes:[],edges:[],blocks:[],createdAt:n,updatedAt:n}}
+export const newBoard=(name='Untitled board'):BrainstormBoard=>{const n=now();return{id:crypto.randomUUID(),name,nodes:[],edges:[],blocks:[],freeText:'',createdAt:n,updatedAt:n}}
 export const newNode=(boardId:string,x=100,y=100):BrainstormNode=>{const n=now();return{id:crypto.randomUUID(),boardId,title:'New thought',body:'',color:'#fff4a8',x,y,width:220,height:150,createdAt:n,updatedAt:n}}
 export const newEdge=(boardId:string,sourceId:string,targetId:string):BrainstormEdge=>({id:crypto.randomUUID(),boardId,sourceId,targetId,createdAt:now()})
