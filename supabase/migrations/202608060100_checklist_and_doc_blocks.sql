@@ -22,7 +22,8 @@ alter table public.study_tasks
 -- Per-date diary text (opened from Monthly via Alt+7, archived in Brainstorm's
 -- Diary tab) and the brainstorm canvas free-text base layer.
 alter table public.user_preferences
-  add column if not exists date_diaries jsonb not null default '{}'::jsonb;
+  add column if not exists date_diaries jsonb not null default '{}'::jsonb,
+  add column if not exists english_font_scale integer not null default 140;
 alter table public.brainstorm_boards
   add column if not exists free_text text not null default '';
 

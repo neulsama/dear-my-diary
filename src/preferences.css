@@ -1,4 +1,4 @@
-:root{--app-font-scale:1;--text:#252328;--app-bg:#fbfaf6;--completed:#a54646;--selected:#74539b;--calendar-cell-height:138px;--event-gap:3px;--check-row-height:36px;--memo-height:58px}
+:root{--app-font-scale:1;--en-font-scale:1;--text:#252328;--app-bg:#fbfaf6;--completed:#a54646;--selected:#74539b;--calendar-cell-height:138px;--event-gap:3px;--check-row-height:36px;--memo-height:58px}
 html,body,#root{background:var(--app-bg);color:var(--text)}
 body{font-size:calc(16px * var(--app-font-scale))}
 .top-header,.main-nav,.planner-page,.settings-page-new,.brainstorm-page,.diary-entry-page,.modal,.toast,.auth-page{font-size:calc(1rem * var(--app-font-scale))}
